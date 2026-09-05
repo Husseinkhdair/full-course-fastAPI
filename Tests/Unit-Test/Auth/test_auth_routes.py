@@ -35,6 +35,7 @@ def test_register_user_route():
         "/auth/register",
         json={"name": "Hussein", "email": "hussein@example.com", "password": "password123"}
     )
+    
     assert response.status_code == 201
     data = response.json()
     assert data["user_id"] == "usr-1"
