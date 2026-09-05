@@ -1,8 +1,8 @@
-from Core import Settings
+from Core.Settings import SettingsApp
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-settings = Settings()
+settings = SettingsApp()
 
 engine = create_engine(settings.postgre_url)
 

@@ -1,5 +1,4 @@
 from Core.Settings import SettingsApp
-from Core import Settings
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config

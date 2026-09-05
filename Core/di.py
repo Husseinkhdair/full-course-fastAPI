@@ -1,6 +1,6 @@
+from Features.Auth.Data.DataSources.AuthRepositoryPostegresSQL import AuthRepositoryPostgresSQl
 from fastapi import Depends
 from Features.Auth.Data.DataSources.AuthRepositoryMongoDB import AuthRepositoryMongoDB
-from Features.Auth.Data.DataSources.AuthRepositoryPostgreSQL import AuthRepositoryPostgreSQL
 from Features.Auth.Domain.Repository.AuthRepository import AuthRepository
 from Features.Auth.Domain.UseCases import (
     CreateUserUseCase,
@@ -14,7 +14,7 @@ from Features.Auth.Domain.UseCases import (
 # Repositories Dependency Providers
 # -----------------------------
 def get_postgres_auth_repository() -> AuthRepository:
-    return AuthRepositoryPostgreSQL()
+    return AuthRepositoryPostgresSQl()
 
 def get_mongodb_auth_repository() -> AuthRepository:
     return AuthRepositoryMongoDB()
