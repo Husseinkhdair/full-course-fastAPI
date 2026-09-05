@@ -5,7 +5,8 @@ from Features.Auth.Domain.UseCases import (
     CreateUserUseCase,
     LoginUserUseCase,
     GetUserByIdUseCase,
-    GetUserByEmailUseCase
+    GetUserByEmailUseCase,
+    DeleteUserUseCase
 )
 
 # -----------------------------
@@ -37,3 +38,9 @@ def get_user_by_email_usecase(
     repo: AuthRepository = Depends(get_auth_repository)
 ) -> GetUserByEmailUseCase:
     return GetUserByEmailUseCase(repo)
+
+def get_delete_user_usecase(
+    repo: AuthRepository = Depends(get_auth_repository)
+) -> DeleteUserUseCase:
+    return DeleteUserUseCase(repo)
+

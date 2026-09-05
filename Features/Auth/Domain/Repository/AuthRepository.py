@@ -16,6 +16,6 @@ class AuthRepository(ABC):
     async def get_user_by_email(self, email: str) -> InfoUserTDO:
         pass
 
-    async def delete_user(self, user_id: Union[int, str]) -> InfoUserTDO:
+    async def delete_user(self, user_id: Union[int, str]) -> bool:
         pass
 

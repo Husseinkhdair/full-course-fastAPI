@@ -3,14 +3,16 @@ from Features.Auth.Domain.UseCases import (
     CreateUserUseCase,
     LoginUserUseCase,
     GetUserByIdUseCase,
-    GetUserByEmailUseCase
+    GetUserByEmailUseCase,
+    DeleteUserUseCase
 )
 from Features.Auth.Presentation.tdo import CreateUserTDO, LoginTDO, InfoUserTDO
 from Core.di import (
     get_create_user_usecase,
     get_login_user_usecase,
     get_user_by_id_usecase,
-    get_user_by_email_usecase
+    get_user_by_email_usecase,
+    get_delete_user_usecase
 )
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -46,4 +48,13 @@ async def get_user_by_email(
     usecase: GetUserByEmailUseCase = Depends(get_user_by_email_usecase)
 ):
     return await usecase.execute(email)
+
+
+@router.delete("/user/id/{user_id}", response_model=bool, status_code=status.HTTP_200_OK)
+async def delete_user(
+    user_id: str,
+    usecase: DeleteUserUseCase = Depends(get_delete_user_usecase)
+):
+    return await usecase.execute(user_id)
+
 

@@ -4,7 +4,8 @@ from Features.Auth.Domain.UseCases import (
     CreateUserUseCase,
     LoginUserUseCase,
     GetUserByIdUseCase,
-    GetUserByEmailUseCase
+    GetUserByEmailUseCase,
+    DeleteUserUseCase
 )
 from Features.Auth.Presentation.tdo import CreateUserTDO, LoginTDO, InfoUserTDO
 
@@ -67,3 +68,15 @@ async def test_get_user_by_email_usecase():
 
     assert result == expected_response
     mock_repo.get_user_by_email.assert_called_once_with("mock@example.com")
+
+@pytest.mark.asyncio
+async def test_delete_user_usecase():
+    mock_repo = AsyncMock()
+    mock_repo.delete_user.return_value = True
+
+    usecase = DeleteUserUseCase(mock_repo)
+    result = await usecase.execute("mock_id_1")
+
+    assert result is True
+    mock_repo.delete_user.assert_called_once_with("mock_id_1")
+

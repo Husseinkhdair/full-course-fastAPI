@@ -102,3 +102,16 @@ def test_complete_e2e_user_workflow():
     non_existent_id_res = client.get("/auth/user/id/nonexistent_id_9999")
     assert non_existent_id_res.status_code == 400
     assert non_existent_id_res.json()["detail"] == "User does not exists"
+
+    # ----------------------------------------------------
+    # Step 10: Delete user by User ID (should succeed with boolean True)
+    # ----------------------------------------------------
+    delete_res = client.delete(f"/auth/user/id/{user_id}")
+    assert delete_res.status_code == 200
+    assert delete_res.json() is True
+
+    # Verify user no longer exists after deletion
+    post_delete_res = client.get(f"/auth/user/id/{user_id}")
+    assert post_delete_res.status_code == 400
+    assert post_delete_res.json()["detail"] == "User does not exists"
+

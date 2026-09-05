@@ -16,7 +16,8 @@ from Core.di import (
     get_create_user_usecase,
     get_login_user_usecase,
     get_user_by_id_usecase,
-    get_user_by_email_usecase
+    get_user_by_email_usecase,
+    get_delete_user_usecase
 )
 from Core.DataBase.MongoDb import collection_users, get_mongo_client
 
@@ -77,7 +78,6 @@ def test_logger_filter():
         user_id_var.reset(user_id_token)
 
 
-
 def test_dependency_injection_providers():
     repo = get_auth_repository()
     assert repo is not None
@@ -93,6 +93,10 @@ def test_dependency_injection_providers():
 
     email_uc = get_user_by_email_usecase(repo)
     assert email_uc.auth_repository == repo
+
+    delete_uc = get_delete_user_usecase(repo)
+    assert delete_uc.auth_repository == repo
+
 
 
 def test_mongodb_collection_proxy():
