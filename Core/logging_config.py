@@ -16,6 +16,8 @@ class LoggerFilter(logging.Filter):
         return True
 
 def setup_logging():
+
+    logging.getLogger("pymongo").setLevel(logging.WARNING)
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 

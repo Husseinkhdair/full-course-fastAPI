@@ -28,7 +28,7 @@ class AuthRepositoryMongoDB(AuthRepository):
             logger.debug(f"creating user in mongodb with email: {user.email}")
             existing_user = await self.user_collection.find_one({"email": user.email})
             if existing_user:
-                logger.debug(f"user already exists with email: {user.email}")
+                logger.info(f"user already exists with email: {user.email}")
                 raise UserAlredyExists()
 
             now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
@@ -66,7 +66,7 @@ class AuthRepositoryMongoDB(AuthRepository):
             logger.debug(f"logging in user with email: {user.email}")
             user_doc = await self.user_collection.find_one({"email": user.email})
             if not user_doc or not verify_password(user.password, user_doc.get("password", "")):
-                logger.debug(f"invalid credentials for email: {user.email}")
+                logger.info(f"invalid credentials for email: {user.email}")
                 raise InvalidEmailOrPassword()
 
             user_entity = UserEntity.from_dict(user_doc)
@@ -96,7 +96,7 @@ class AuthRepositoryMongoDB(AuthRepository):
 
             user_doc = await self.user_collection.find_one({"$or": query})
             if not user_doc:
-                logger.debug(f"user not found in mongodb with id: {user_id}")
+                logger.info(f"user not found in mongodb with id: {user_id}")
                 raise UserDoesNotExists()
 
             user_entity = UserEntity.from_dict(user_doc)
@@ -121,7 +121,7 @@ class AuthRepositoryMongoDB(AuthRepository):
             logger.debug(f"searching user in mongodb by email: {email}")
             user_doc = await self.user_collection.find_one({"email": email})
             if not user_doc:
-                logger.debug(f"user not found in mongodb with email: {email}")
+                logger.info(f"user not found in mongodb with email: {email}")
                 raise UserDoesNotExists()
 
             logger.debug(f"user found in mongodb with email: {email}")
