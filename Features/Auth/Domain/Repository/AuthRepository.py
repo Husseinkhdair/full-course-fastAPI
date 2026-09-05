@@ -4,12 +4,13 @@ from Features.Auth.Presentation.tdo import CreateUserTDO,InfoUserTDO
 
 class AuthRepository(ABC):
 
-    def create_user(self,user:CreateUserTDO) -> InfoUserTDO:
+    async def create_user(self,user:CreateUserTDO) -> InfoUserTDO:
         pass
 
-    def login_user(self,user:LoginTDO) -> InfoUserTDO:
+    async def login_user(self,user:LoginTDO) -> InfoUserTDO:
         pass
 
-    def get_user_by_id(self,user_id:int) -> InfoUserTDO:
+    async def get_user_by_id(self,user_id:int) -> InfoUserTDO:
         pass
-    
+    async def get_user_by_email(self,email:str) -> InfoUserTDO:
+        pass
