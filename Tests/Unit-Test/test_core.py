@@ -9,7 +9,8 @@ from Core.errors.AuthErrors import (
 )
 from Core.errors.GlobleErrors import ServerError
 from Core.security.Password import PasswordSecurity, hash_password, verify_password
-from Core.logging_config import LoggerFilter
+from Core.logging_config import LoggerFilter, request_id_var, user_id_var
+
 from Core.di import (
     get_auth_repository,
     get_create_user_usecase,

@@ -11,7 +11,7 @@ from Core.errors.AuthErrors import (
     UserDoesNotExists,
 )
 from Core.errors.GlobleErrors import ServerError
-from Features.Auth.Domain.Entities.UserEntity import UserEntity
+from Features.Auth.Domain.Entities.UserEntity import UserEntity, Status
 from Features.Auth.Domain.Repository.AuthRepository import AuthRepository
 from Features.Auth.Presentation.tdo import CreateUserTDO, InfoUserTDO, LoginTDO
 
@@ -142,6 +142,38 @@ class AuthRepositoryMongoDB(AuthRepository):
         except Exception as e:
             logger.exception(f"error searching user in mongodb by email: {email}")
             raise ServerError(detail=str(e))
+
+    async def delete_user(self, user_id: Union[int, str]) -> InfoUserTDO:
+        try:
+            logger.debug(f"deleting user in mongodb by id: {user_id}")
+            query = [{"id": str(user_id)}, {"_id": str(user_id)}]
+            if ObjectId.is_valid(str(user_id)):
+                query.append({"_id": ObjectId(str(user_id))})
+
+            user_doc = await self.user_collection.find_one_and_delete({"$or": query})
+            if not user_doc:
+                logger.info(f"user not found to delete with id: {user_id}")
+                raise UserDoesNotExists()
+
+            user_entity = UserEntity.from_dict(user_doc)
+            user_entity.status = Status.DELETED
+
+            logger.info(f"user deleted successfully with id: {user_id}")
+            return InfoUserTDO(
+                user_id=user_entity.id,
+                name=user_entity.name,
+                email=user_entity.email,
+                role=user_entity.role.value if hasattr(user_entity.role, "value") else str(user_entity.role),
+                status=user_entity.status.value,
+                created_at=user_entity.created_at,
+                updated_at=user_entity.updated_at
+            )
+        except AuthError:
+            raise
+        except Exception as e:
+            logger.exception(f"error deleting user by id: {user_id}")
+            raise ServerError(detail=str(e))
+
 
 
             
