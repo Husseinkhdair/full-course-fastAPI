@@ -11,3 +11,4 @@ class SettingsApp:
         self.collection_users = os.getenv("COLLECTION_USERA")
         
         self.postgre_url = os.getenv("PostgreURL")
+        self.Development = os.getenv("Development","True")
