@@ -13,15 +13,14 @@ from Features.Auth.Domain.UseCases import (
 # -----------------------------
 # Repositories Dependency Providers
 # -----------------------------
-def get_auth_repository() -> AuthRepository:
-    return get_postgres_auth_repository()
-
-
 def get_postgres_auth_repository() -> AuthRepository:
     return AuthRepositoryPostgreSQL()
 
 def get_mongodb_auth_repository() -> AuthRepository:
     return AuthRepositoryMongoDB()
+
+def get_auth_repository(repo: AuthRepository = Depends(get_postgres_auth_repository)) -> AuthRepository:
+    return repo
 
 # -----------------------------
 # Auth UseCases Dependency Providers
