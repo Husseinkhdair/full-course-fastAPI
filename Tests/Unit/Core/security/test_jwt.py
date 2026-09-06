@@ -1,5 +1,6 @@
 from datetime import timedelta
 import pytest
+from Core.errors.AuthErrors import InvalidToken
 from Core.security.Jwt import JWTPayload, generate_token, verify_token
 
 
@@ -79,13 +80,14 @@ def test_generate_and_verify_token():
 
 def test_verify_invalid_token():
     invalid_token = "invalid.token.str"
-    verified = verify_token(invalid_token)
-    assert verified is None
+    with pytest.raises(InvalidToken):
+        verify_token(invalid_token)
 
 
 def test_verify_expired_token():
     payload = JWTPayload(id="user_789")
     token = generate_token(payload, expires_delta=timedelta(seconds=-10))
 
-    verified = verify_token(token)
-    assert verified is None
+    with pytest.raises(InvalidToken):
+        verify_token(token)
+
