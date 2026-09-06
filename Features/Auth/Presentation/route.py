@@ -23,7 +23,8 @@ async def register_user(
     user: CreateUserTDO,
     usecase: CreateUserUseCase = Depends(get_create_user_usecase)
 ):
-    return await usecase.execute(user)
+    user_entity = await usecase.execute(email=user.email, name=user.name, password=user.password)
+    return InfoUserTDO.from_entity(user_entity)
 
 
 @router.post("/login", response_model=InfoUserTDO, status_code=status.HTTP_200_OK)
@@ -31,7 +32,8 @@ async def login_user(
     user: LoginTDO,
     usecase: LoginUserUseCase = Depends(get_login_user_usecase)
 ):
-    return await usecase.execute(user)
+    user_entity = await usecase.execute(email=user.email, password=user.password)
+    return InfoUserTDO.from_entity(user_entity)
 
 
 @router.get("/user/id/{user_id}", response_model=InfoUserTDO, status_code=status.HTTP_200_OK)
@@ -39,7 +41,8 @@ async def get_user_by_id(
     user_id: str,
     usecase: GetUserByIdUseCase = Depends(get_user_by_id_usecase)
 ):
-    return await usecase.execute(user_id)
+    user_entity = await usecase.execute(user_id)
+    return InfoUserTDO.from_entity(user_entity)
 
 
 @router.get("/user/email/{email}", response_model=InfoUserTDO, status_code=status.HTTP_200_OK)
@@ -47,7 +50,8 @@ async def get_user_by_email(
     email: str,
     usecase: GetUserByEmailUseCase = Depends(get_user_by_email_usecase)
 ):
-    return await usecase.execute(email)
+    user_entity = await usecase.execute(email)
+    return InfoUserTDO.from_entity(user_entity)
 
 
 @router.delete("/user/id/{user_id}", response_model=bool, status_code=status.HTTP_200_OK)
@@ -56,5 +60,6 @@ async def delete_user(
     usecase: DeleteUserUseCase = Depends(get_delete_user_usecase)
 ):
     return await usecase.execute(user_id)
+
 
 
