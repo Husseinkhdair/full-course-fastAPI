@@ -1,6 +1,8 @@
+from sqlalchemy.dialects.postgresql import Any
+from ast import Dict
 import uuid
 from datetime import datetime, timezone
-from typing import Optional, Union, Dict, Any
+from typing import Optional
 from Features.Auth.Domain.Entities.UserEntity import UserEntity, Role, Status
 
 
@@ -52,31 +54,30 @@ class AuthMongosModel:
             updated_at=entity.updated_at,
         )
 
-    # def to_dict(self) -> Dict[str, Any]:
-    #     return {
-    #         "id": self.id,
-    #         "_id": self.id,
-    #         "name": self.name,
-    #         "email": self.email,
-    #         "password": self.password,
-    #         "role": self.role.value if isinstance(self.role, Role) else str(self.role),
-    #         "status": self.status.value if isinstance(self.status, Status) else str(self.status),
-    #         "created_at": self.created_at,
-    #         "updated_at": self.updated_at,
-    #     }
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "_id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "password": self.password,
+            "role": self.role.value if isinstance(self.role, Role) else str(self.role),
+            "status": self.status.value if isinstance(self.status, Status) else str(self.status),
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }
 
-    # @classmethod
-    # def from_dict(cls, data: Dict[str, Any]) -> "AuthMongosModel":
-    #     if not data:
-    #         return None
-    #     user_id = str(data.get("id") or data.get("_id") or "")
-    #     return cls(
-    #         id=user_id,
-    #         name=data.get("name", ""),
-    #         email=data.get("email", ""),
-    #         password=data.get("password", ""),
-    #         role=data.get("role", Role.USER),
-    #         status=data.get("status", Status.ACTIVE),
-    #         created_at=data.get("created_at"),
-    #         updated_at=data.get("updated_at"),
-    #     )
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "AuthMongosModel":
+        if not data:
+            return None
+        user_id = str(data.get("id") or data.get("_id") or "")
+        return cls(
+            id=user_id,
+            name=data.get("name", ""),
+            email=data.get("email", ""),
+            password=data.get("password", ""),
+            role=data.get("role", Role.USER),
+            status=data.get("status", Status.ACTIVE),
+            created_at=data.get("created_at"),
+            updated_at=data.get("updated_at"),
+        )
