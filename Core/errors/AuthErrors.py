@@ -20,3 +20,7 @@ class InvalidEmailOrPassword(AuthError):
 class UserNotHaveRole(AuthError):
     def __init__(self):
         super().__init__("User not have role",403)
+
+class InvalidToken(AuthError):
+    def __init__(self):
+        super().__init__("Invalid token",401)

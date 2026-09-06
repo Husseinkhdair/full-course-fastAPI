@@ -9,4 +9,7 @@ def test_settings():
     assert settings.collection_users is not None
     assert settings.postgre_url is not None
     assert settings.Development is not None
-    
+    assert settings.secret_key is not None
+    assert settings.jwt_algorithm is not None
+    assert settings.access_token_expire_minutes is not None
+

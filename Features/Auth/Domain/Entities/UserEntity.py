@@ -2,7 +2,7 @@ from Core.Strings.RoleString import admin,user,active,inactive,deleted
 from datetime import datetime, timezone
 import uuid
 from enum import Enum
-from typing import Optional, Union, Dict, Any
+from typing import Optional
 
 
 class Role(Enum):
@@ -27,6 +27,7 @@ class UserEntity:
         created_at: Optional[str] = None,
         updated_at: Optional[str] = None,
         id: Optional[str] = None,
+        token: Optional[str] = None,
     ):
         self.name = name
         self.email = email
@@ -38,6 +39,7 @@ class UserEntity:
         self.created_at = created_at if created_at is not None else now_str
         self.updated_at = updated_at if updated_at is not None else now_str
         self.id = id if id is not None else str(uuid.uuid4())
+        self.token = token if token is not None else None
 
 
     def __str__(self):
