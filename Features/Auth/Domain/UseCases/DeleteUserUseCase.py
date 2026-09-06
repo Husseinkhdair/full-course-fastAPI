@@ -5,6 +5,6 @@ class DeleteUserUseCase:
     def __init__(self, auth_repository: AuthRepository):
         self.auth_repository = auth_repository
 
-    async def execute(self, user_id: Union[int, str]) -> bool:
-        return await self.auth_repository.delete_user(user_id)
+    async def execute(self, id:str ) -> bool:
+        return await self.auth_repository.delete_user(id)
 

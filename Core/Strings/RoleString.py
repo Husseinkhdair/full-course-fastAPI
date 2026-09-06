@@ -1,0 +1,5 @@
+admin:str = 'admin'
+user:str = 'user'
+active:str = 'active'
+inactive:str = 'inactive'
+deleted:str = 'deleted'

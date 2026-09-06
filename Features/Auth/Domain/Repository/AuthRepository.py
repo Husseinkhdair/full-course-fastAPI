@@ -1,21 +1,21 @@
 from typing import Union
 from abc import ABC
 from Features.Auth.Presentation.tdo import CreateUserTDO, InfoUserTDO, LoginTDO
-
+from Features.Auth.Domain.Entities.UserEntity import UserEntity
 class AuthRepository(ABC):
 
-    async def create_user(self, user: CreateUserTDO) -> InfoUserTDO:
+    async def create_user(self, email:str , password:str, name:str) -> UserEntity:
         pass
 
-    async def login_user(self, user: LoginTDO) -> InfoUserTDO:
+    async def login_user(self, email:str , password:str) -> UserEntity:
         pass
 
-    async def get_user_by_id(self, user_id: Union[int, str]) -> InfoUserTDO:
+    async def get_user_by_id(self, user_id:str) -> UserEntity:
         pass
 
-    async def get_user_by_email(self, email: str) -> InfoUserTDO:
+    async def get_user_by_email(self, email:str) -> UserEntity:
         pass
 
-    async def delete_user(self, user_id: Union[int, str]) -> bool:
+    async def delete_user(self, id:str ) -> bool:
         pass
 
