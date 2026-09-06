@@ -1,21 +1,26 @@
-from typing import Union
-from abc import ABC
-from Features.Auth.Presentation.tdo import CreateUserTDO, InfoUserTDO, LoginTDO
+from abc import ABC, abstractmethod
 from Features.Auth.Domain.Entities.UserEntity import UserEntity
+
+
 class AuthRepository(ABC):
 
-    async def create_user(self, email:str , password:str, name:str) -> UserEntity:
+    @abstractmethod
+    async def create_user(self, email: str, name: str, password: str) -> UserEntity:
         pass
 
-    async def login_user(self, email:str , password:str) -> UserEntity:
+    @abstractmethod
+    async def login_user(self, email: str, password: str) -> UserEntity:
         pass
 
-    async def get_user_by_id(self, user_id:str) -> UserEntity:
+    @abstractmethod
+    async def get_user_by_id(self, user_id: str) -> UserEntity:
         pass
 
-    async def get_user_by_email(self, email:str) -> UserEntity:
+    @abstractmethod
+    async def get_user_by_email(self, email: str) -> UserEntity:
         pass
 
-    async def delete_user(self, id:str ) -> bool:
+    @abstractmethod
+    async def delete_user(self, user_id: str) -> bool:
         pass
 
