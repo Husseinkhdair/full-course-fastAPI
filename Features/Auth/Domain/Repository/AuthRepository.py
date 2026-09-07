@@ -24,3 +24,5 @@ class AuthRepository(ABC):
     async def delete_user(self, user_id: str) -> bool:
         pass
 
+
+
