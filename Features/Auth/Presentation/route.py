@@ -1,3 +1,5 @@
+from fastapi import Cookie
+from typing import Optional
 from Core.security.Jwt import verify_token
 from fastapi import APIRouter, Depends, status, Response
 from Features.Auth.Domain.UseCases import (
@@ -26,6 +28,8 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 async def register_user(
     user: CreateUserTDO,
     response: Response,
+    request_token: Optional[str] = Cookie(default=None),
+    
     usecase: CreateUserUseCase = Depends(get_create_user_usecase)
 ):
     user_entity = await usecase.execute(email=user.email, name=user.name, password=user.password)

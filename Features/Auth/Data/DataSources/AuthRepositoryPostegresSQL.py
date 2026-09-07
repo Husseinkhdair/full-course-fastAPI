@@ -1,3 +1,4 @@
+from typing import Optional
 import logging
 import uuid
 from datetime import datetime, timezone
@@ -26,7 +27,7 @@ class AuthRepositoryPostgresSQl(AuthRepository):
     def __init__(self, db=None):
         self.db = db if db is not None else SessionLocal()
 
-    async def create_user(self, email: str, name: str, password: str) -> UserEntity:
+    async def create_user(self, email: str, name: str, password: str,role:Optional[Role]) -> UserEntity:
         try:
             logger.debug(f"creating user in postgresql with email: {email}")
 
@@ -45,10 +46,11 @@ class AuthRepositoryPostgresSQl(AuthRepository):
                 email=email,
                 name=name,
                 password=hashed_pwd,
-                role=Role.USER.value,
+                role=Role.USER.value if role is None else role.value,
                 status=Status.ACTIVE.value,
                 created_at=now_str,
                 updated_at=now_str,
+                
             )
 
             self.db.add(usernew)

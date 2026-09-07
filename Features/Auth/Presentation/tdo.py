@@ -1,3 +1,4 @@
+from Features.Auth.Domain.Entities.UserEntity import Role
 from typing import Optional, Union
 from pydantic import BaseModel, EmailStr, Field
 from Features.Auth.Domain.Entities.UserEntity import UserEntity
@@ -7,6 +8,7 @@ class CreateUserTDO(BaseModel):
     name: str = Field(..., description="Name", json_schema_extra={"example": "Hussein"}, min_length=1, max_length=255)
     email: EmailStr = Field(..., description="Email", json_schema_extra={"example": "hussein@gmail.com"})
     password: str = Field(..., description="Password", json_schema_extra={"example": "password"}, min_length=6, max_length=16)
+    role: Optional[Role] = Field(None, description="Role", json_schema_extra={"example": "user"})
 
 
 class LoginTDO(BaseModel):
@@ -41,4 +43,4 @@ class InfoUserTDO(BaseModel):
             updated_at=entity.updated_at,
             token=getattr(entity, "token", None),
         )
-
+

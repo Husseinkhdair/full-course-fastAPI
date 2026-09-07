@@ -1,3 +1,5 @@
+from Features.Auth.Domain.Entities.UserEntity import Role
+from typing import Optional
 from Features.Auth.Data.Models.AuthModelMongos import AuthMongosModel
 import logging
 from datetime import datetime, timezone
@@ -22,7 +24,7 @@ logger = logging.getLogger(__name__)
 class AuthRepositoryMongoDB(AuthRepository):
     user_collection = collection_users
 
-    async def create_user(self, email: str, name: str, password: str) -> UserEntity:
+    async def create_user(self, email: str, name: str, password: str,role:Optional[Role]) -> UserEntity:
         try:
             logger.debug(f"creating user in mongodb with email: {email}")
             existing_user = await self.user_collection.find_one({"email": email})
@@ -38,7 +40,8 @@ class AuthRepositoryMongoDB(AuthRepository):
                 email=email,
                 password=hashed_pwd,
                 created_at=now_str,
-                updated_at=now_str
+                updated_at=now_str,
+                role=role.value if role is not None else Role.USER.value
             )
 
             result = await self.user_collection.insert_one(user.to_dict())
