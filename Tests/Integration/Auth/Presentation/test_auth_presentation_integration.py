@@ -75,22 +75,26 @@ def test_full_auth_routes_integration_flow(client: TestClient):
     assert login_data["email"] == email
     assert login_data["token"] is not None
 
-    # 3. Get User By ID via GET /auth/user/id/{user_id}
-    get_id_response = client.get(f"/auth/user/id/{user_id}")
+    # 3. Get User By ID via GET /auth/user/id/{user_id} (Requires Admin Token)
+    from Core.security.Jwt import JWTPayload, generate_token
+    admin_token = generate_token(JWTPayload(id="admin_id", role="admin"))
+    auth_headers = {"Authorization": f"Bearer {admin_token}"}
+
+    get_id_response = client.get(f"/auth/user/id/{user_id}", headers=auth_headers)
     assert get_id_response.status_code == 200
     get_id_data = get_id_response.json()
     assert get_id_data["user_id"] == user_id
     assert get_id_data["email"] == email
 
-    # 4. Get User By Email via GET /auth/user/email/{email}
-    get_email_response = client.get(f"/auth/user/email/{email}")
+    # 4. Get User By Email via GET /auth/user/email/{email} (Requires Admin Token)
+    get_email_response = client.get(f"/auth/user/email/{email}", headers=auth_headers)
     assert get_email_response.status_code == 200
     get_email_data = get_email_response.json()
     assert get_email_data["user_id"] == user_id
     assert get_email_data["email"] == email
 
-    # 5. Delete User via DELETE /auth/user/id/{user_id}
-    del_response = client.delete(f"/auth/user/id/{user_id}")
+    # 5. Delete User via DELETE /auth/user/id/{user_id} (Requires Admin Token)
+    del_response = client.delete(f"/auth/user/id/{user_id}", headers=auth_headers)
     assert del_response.status_code == 200
     assert del_response.json() is True
 
@@ -115,8 +119,11 @@ def test_register_already_exists_route_integration(client: TestClient):
     )
     assert reg2.status_code in (400, 409, 500, 401)
 
-    # Cleanup
-    client.delete(f"/auth/user/id/{user_id}")
+    # Cleanup (Requires Admin Token)
+    from Core.security.Jwt import JWTPayload, generate_token
+    admin_token = generate_token(JWTPayload(id="admin_cleanup", role="admin"))
+    auth_headers = {"Authorization": f"Bearer {admin_token}"}
+    client.delete(f"/auth/user/id/{user_id}", headers=auth_headers)
 
 
 @pytest.mark.integration
@@ -139,5 +146,8 @@ def test_login_invalid_password_route_integration(client: TestClient):
     )
     assert login_fail.status_code in (401, 400, 500)
 
-    # Cleanup
-    client.delete(f"/auth/user/id/{user_id}")
+    # Cleanup (Requires Admin Token)
+    from Core.security.Jwt import JWTPayload, generate_token
+    admin_token = generate_token(JWTPayload(id="admin_cleanup_2", role="admin"))
+    auth_headers = {"Authorization": f"Bearer {admin_token}"}
+    client.delete(f"/auth/user/id/{user_id}", headers=auth_headers)

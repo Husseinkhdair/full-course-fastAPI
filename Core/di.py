@@ -1,6 +1,7 @@
-from Features.Auth.Data.DataSources.AuthRepositoryPostegresSQL import AuthRepositoryPostgresSQl
-from fastapi import Depends
+from typing import Optional
+from fastapi import Depends, Header, Cookie
 from fastapi.params import Depends as DependsParam
+from Features.Auth.Data.DataSources.AuthRepositoryPostegresSQL import AuthRepositoryPostgresSQl
 from Features.Auth.Data.DataSources.AuthRepositoryMongoDB import AuthRepositoryMongoDB
 from Features.Auth.Domain.Repository.AuthRepository import AuthRepository
 from Features.Auth.Domain.UseCases import (
@@ -10,6 +11,28 @@ from Features.Auth.Domain.UseCases import (
     GetUserByEmailUseCase,
     DeleteUserUseCase
 )
+from Core.errors.AuthErrors import InvalidToken
+
+# -----------------------------
+# Security & Token Providers
+# -----------------------------
+def get_current_token(
+    authorization: Optional[str] = Header(None),
+    access_token: Optional[str] = Cookie(None)
+) -> str:
+    token = None
+    if authorization:
+        if authorization.startswith("Bearer "):
+            token = authorization[7:].strip()
+        else:
+            token = authorization.strip()
+    elif access_token:
+        token = access_token
+
+    if not token:
+        raise InvalidToken()
+    return token
+
 
 # -----------------------------
 # Repositories Dependency Providers

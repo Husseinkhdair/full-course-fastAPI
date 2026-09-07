@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock
 from fastapi.testclient import TestClient
 
 from Core.di import (
+    get_current_token,
     get_create_user_usecase,
     get_delete_user_usecase,
     get_login_user_usecase,
@@ -87,6 +88,7 @@ def test_get_user_by_id_route(client):
     mock_usecase.execute.return_value = mock_user
 
     app.dependency_overrides[get_user_by_id_usecase] = lambda: mock_usecase
+    app.dependency_overrides[get_current_token] = lambda: "mock_admin_token"
 
     response = client.get("/auth/user/id/user_123")
 
@@ -108,6 +110,7 @@ def test_get_user_by_email_route(client):
     mock_usecase.execute.return_value = mock_user
 
     app.dependency_overrides[get_user_by_email_usecase] = lambda: mock_usecase
+    app.dependency_overrides[get_current_token] = lambda: "mock_admin_token"
 
     response = client.get("/auth/user/email/hussein@gmail.com")
 
@@ -123,6 +126,7 @@ def test_delete_user_route(client):
     mock_usecase.execute.return_value = True
 
     app.dependency_overrides[get_delete_user_usecase] = lambda: mock_usecase
+    app.dependency_overrides[get_current_token] = lambda: "mock_admin_token"
 
     response = client.delete("/auth/user/id/user_123")
 
@@ -130,3 +134,4 @@ def test_delete_user_route(client):
     assert response.json() is True
 
     app.dependency_overrides.clear()
+

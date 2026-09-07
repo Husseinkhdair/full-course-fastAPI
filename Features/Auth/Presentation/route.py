@@ -9,6 +9,7 @@ from Features.Auth.Domain.UseCases import (
 from Features.Auth.Presentation.tdo import CreateUserTDO, LoginTDO, InfoUserTDO
 from Core.Settings import SettingsApp
 from Core.di import (
+    get_current_token,
     get_create_user_usecase,
     get_login_user_usecase,
     get_user_by_id_usecase,
@@ -67,27 +68,31 @@ async def login_user(
 @router.get("/user/id/{user_id}", response_model=InfoUserTDO, status_code=status.HTTP_200_OK)
 async def get_user_by_id(
     user_id: str,
+    token: str = Depends(get_current_token),
     usecase: GetUserByIdUseCase = Depends(get_user_by_id_usecase)
 ):
-    user_entity = await usecase.execute(user_id)
+    user_entity = await usecase.execute(user_id=user_id, token=token)
     return InfoUserTDO.from_entity(user_entity)
 
 
 @router.get("/user/email/{email}", response_model=InfoUserTDO, status_code=status.HTTP_200_OK)
 async def get_user_by_email(
     email: str,
+    token: str = Depends(get_current_token),
     usecase: GetUserByEmailUseCase = Depends(get_user_by_email_usecase)
 ):
-    user_entity = await usecase.execute(email)
+    user_entity = await usecase.execute(email=email, token=token)
     return InfoUserTDO.from_entity(user_entity)
 
 
 @router.delete("/user/id/{user_id}", response_model=bool, status_code=status.HTTP_200_OK)
 async def delete_user(
     user_id: str,
+    token: str = Depends(get_current_token),
     usecase: DeleteUserUseCase = Depends(get_delete_user_usecase)
 ):
-    return await usecase.execute(user_id)
+    return await usecase.execute(user_id=user_id, token=token)
+
 
 
 

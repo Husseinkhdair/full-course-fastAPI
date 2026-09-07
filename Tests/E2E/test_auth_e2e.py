@@ -57,22 +57,26 @@ def test_e2e_complete_user_lifecycle(e2e_client: TestClient):
     assert login_payload is not None
     assert login_payload.id == user_id
 
-    # Step 5: Fetch Profile by User ID
-    get_id_res = e2e_client.get(f"/auth/user/id/{user_id}")
+    # Step 5: Fetch Profile by User ID (Requires Admin Token)
+    from Core.security.Jwt import JWTPayload, generate_token
+    admin_token = generate_token(JWTPayload(id="admin_e2e", role="admin"))
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+
+    get_id_res = e2e_client.get(f"/auth/user/id/{user_id}", headers=admin_headers)
     assert get_id_res.status_code == 200
     get_id_data = get_id_res.json()
     assert get_id_data["user_id"] == user_id
     assert get_id_data["email"] == email
 
     # Step 6: Fetch Profile by Email
-    get_email_res = e2e_client.get(f"/auth/user/email/{email}")
+    get_email_res = e2e_client.get(f"/auth/user/email/{email}", headers=admin_headers)
     assert get_email_res.status_code == 200
     get_email_data = get_email_res.json()
     assert get_email_data["user_id"] == user_id
     assert get_email_data["email"] == email
 
     # Step 7: Delete User Account
-    del_res = e2e_client.delete(f"/auth/user/id/{user_id}")
+    del_res = e2e_client.delete(f"/auth/user/id/{user_id}", headers=admin_headers)
     assert del_res.status_code == 200
     assert del_res.json() is True
 
@@ -108,16 +112,20 @@ def test_e2e_multiple_users_isolation(e2e_client: TestClient):
 
     assert user1_id != user2_id
 
-    # Fetch User 1 and User 2 profiles and verify separation
-    p1 = e2e_client.get(f"/auth/user/id/{user1_id}").json()
-    p2 = e2e_client.get(f"/auth/user/id/{user2_id}").json()
+    # Fetch User 1 and User 2 profiles and verify separation (Admin Token)
+    from Core.security.Jwt import JWTPayload, generate_token
+    admin_token = generate_token(JWTPayload(id="admin_e2e_2", role="admin"))
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+
+    p1 = e2e_client.get(f"/auth/user/id/{user1_id}", headers=admin_headers).json()
+    p2 = e2e_client.get(f"/auth/user/id/{user2_id}", headers=admin_headers).json()
 
     assert p1["email"] == user1_email
     assert p2["email"] == user2_email
 
     # Cleanup
-    e2e_client.delete(f"/auth/user/id/{user1_id}")
-    e2e_client.delete(f"/auth/user/id/{user2_id}")
+    e2e_client.delete(f"/auth/user/id/{user1_id}", headers=admin_headers)
+    e2e_client.delete(f"/auth/user/id/{user2_id}", headers=admin_headers)
 
 
 @pytest.mark.e2e
