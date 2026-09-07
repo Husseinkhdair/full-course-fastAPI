@@ -1,4 +1,4 @@
-from Core.Strings.RoleString import admin,user,active,inactive,deleted
+from Core.Strings.RoleString import admin,user,active,inactive,deleted,superAdmin
 from datetime import datetime, timezone
 import uuid
 from enum import Enum
@@ -8,6 +8,8 @@ from typing import Optional
 class Role(Enum):
     ADMIN = admin
     USER = user
+    SUPERADMIN = superAdmin
+
 
 
 class Status(Enum):

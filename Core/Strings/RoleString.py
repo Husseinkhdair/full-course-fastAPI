@@ -1,5 +1,6 @@
 admin:str = 'admin'
 user:str = 'user'
+superAdmin:str = 'superAdmin'
 active:str = 'active'
 inactive:str = 'inactive'
 deleted:str = 'deleted'

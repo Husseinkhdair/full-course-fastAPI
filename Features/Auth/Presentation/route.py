@@ -1,3 +1,4 @@
+from Core.security.Jwt import verify_token
 from fastapi import APIRouter, Depends, status, Response
 from Features.Auth.Domain.UseCases import (
     CreateUserUseCase,
@@ -71,7 +72,9 @@ async def get_user_by_id(
     token: str = Depends(get_current_token),
     usecase: GetUserByIdUseCase = Depends(get_user_by_id_usecase)
 ):
-    user_entity = await usecase.execute(user_id=user_id, token=token)
+
+    token_paylod = verify_token(token)
+    user_entity = await usecase.execute(user_id=user_id, role=token_paylod.role)
     return InfoUserTDO.from_entity(user_entity)
 
 
@@ -81,7 +84,8 @@ async def get_user_by_email(
     token: str = Depends(get_current_token),
     usecase: GetUserByEmailUseCase = Depends(get_user_by_email_usecase)
 ):
-    user_entity = await usecase.execute(email=email, token=token)
+    token_paylod = verify_token(token)
+    user_entity = await usecase.execute(email=email, role=token_paylod.role)
     return InfoUserTDO.from_entity(user_entity)
 
 
@@ -91,7 +95,8 @@ async def delete_user(
     token: str = Depends(get_current_token),
     usecase: DeleteUserUseCase = Depends(get_delete_user_usecase)
 ):
-    return await usecase.execute(user_id=user_id, token=token)
+    token_paylod = verify_token(token)
+    return await usecase.execute(user_id=user_id, role=token_paylod.role)
 
 
 

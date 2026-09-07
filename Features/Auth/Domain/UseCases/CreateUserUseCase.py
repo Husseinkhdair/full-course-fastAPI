@@ -1,3 +1,5 @@
+from Features.Auth.Domain.Entities.UserEntity import Role
+from typing import Optional
 import logging
 from Core.errors.AuthErrors import AuthError, UserAlredyExists, UserDoesNotExists
 from Core.errors.GlobleErrors import ServerError
@@ -12,16 +14,21 @@ class CreateUserUseCase:
     def __init__(self, auth_repository: AuthRepository):
         self.auth_repository = auth_repository
 
-    async def execute(self, email: str, name: str, password: str) -> UserEntity:
+    async def execute(self, email: str, name: str, password: str,role:Optional[Role]) -> UserEntity:
         try:
             try:
+
                 is_user = await self.auth_repository.get_user_by_email(email)
                 if is_user:
                     raise UserAlredyExists()
             except UserDoesNotExists:
                 pass
 
-            user = await self.auth_repository.create_user(email, name, password)
+
+            if role is not None and role == Role.SUPERADMIN:
+                user = await self.auth_repository.create_user(email, name, password,role)
+            else:
+                user = await self.auth_repository.create_user(email, name, password)
 
             role_str = user.role.value if hasattr(user.role, "value") else str(user.role)
             payload = JWTPayload(id=user.id, email=user.email, role=role_str)

@@ -1,3 +1,5 @@
+from Features.Auth.Domain.Entities.UserEntity import Role
+from typing import Optional
 from abc import ABC, abstractmethod
 from Features.Auth.Domain.Entities.UserEntity import UserEntity
 
@@ -5,7 +7,7 @@ from Features.Auth.Domain.Entities.UserEntity import UserEntity
 class AuthRepository(ABC):
 
     @abstractmethod
-    async def create_user(self, email: str, name: str, password: str) -> UserEntity:
+    async def create_user(self, email: str, name: str, password: str,role:Optional[Role]) -> UserEntity:
         pass
 
     @abstractmethod
