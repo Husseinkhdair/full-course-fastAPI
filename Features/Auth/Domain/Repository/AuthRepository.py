@@ -27,4 +27,10 @@ class AuthRepository(ABC):
         pass
 
 
+    @abstractmethod
+    async def check_email_exists(self, email: str) -> bool:
+        pass
+
+
+
 

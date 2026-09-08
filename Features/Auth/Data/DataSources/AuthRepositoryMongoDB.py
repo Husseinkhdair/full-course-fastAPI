@@ -137,5 +137,22 @@ class AuthRepositoryMongoDB(AuthRepository):
             raise ServerError(detail=str(e))
 
 
+    async def check_email_exists(self, email: str) -> bool:
+        try:
+            logger.debug(f"checking email in mongodb: {email}")
+            user_doc = await self.user_collection.find_one({"email": email})
+            if user_doc:
+                logger.info(f"email already exists in mongodb: {email}")
+                return True
+
+            logger.info(f"email does not exist in mongodb: {email}")
+            return False
+        except AuthError:
+            raise
+        except Exception as e:
+            logger.exception(f"error checking email in mongodb: {email}")
+            raise ServerError(detail=str(e))
+
+
 
             

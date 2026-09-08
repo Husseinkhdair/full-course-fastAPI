@@ -11,7 +11,8 @@ from Features.Auth.Domain.UseCases import (
     LoginUserUseCase,
     GetUserByIdUseCase,
     GetUserByEmailUseCase,
-    DeleteUserUseCase
+    DeleteUserUseCase,
+    CheckEmailExistsUseCase
 )
 from Core.errors.AuthErrors import InvalidToken
 
@@ -91,4 +92,10 @@ def get_delete_user_usecase(
     repo: AuthRepository = Depends(get_auth_repository)
 ) -> DeleteUserUseCase:
     return DeleteUserUseCase(repo)
+
+def get_check_email_exists_usecase(
+    repo: AuthRepository = Depends(get_auth_repository)
+) -> CheckEmailExistsUseCase:
+    return CheckEmailExistsUseCase(repo)
+
 

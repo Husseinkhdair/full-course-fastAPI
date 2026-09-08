@@ -142,3 +142,16 @@ class AuthRepositoryPostgresSQl(AuthRepository):
             logger.exception(f"error deleting user by id in postgresql: {user_id}")
             raise ServerError(detail=str(e))
 
+    async def check_email_exists(self, email: str) -> bool:
+        try:
+            logger.debug(f"checking email in postgresql: {email}")
+            db_user = self.db.execute(
+                select(AuthPostgresModel).where(AuthPostgresModel.email == email)
+            ).scalars().first()
+
+            return db_user is not None
+        except AuthError:
+            raise
+        except Exception as e:
+            logger.exception(f"error checking email in postgresql: {email}")
+            raise ServerError(detail=str(e))
