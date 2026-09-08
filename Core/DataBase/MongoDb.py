@@ -29,6 +29,7 @@ class CollectionProxy:
         return getattr(coll, name)
 
 collection_users = CollectionProxy(lambda: settings.collection_users)
+collection_posts = CollectionProxy(lambda: settings.collection_posts)
 
 
 

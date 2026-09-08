@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from Core.logging_config import setup_logging
 from Core.security.Middleware import middlewareApp
 from Features.Auth.Presentation.route import router as auth_router
+from Features.Post.Presentation.route import router as post_router
 
 # Step 1: Initialize logging
 setup_logging()
@@ -33,6 +34,7 @@ app.add_middleware(
 
 # Step 5: Feature Router Mounting
 app.include_router(auth_router)
+app.include_router(post_router)
 
 # Mount Web frontend static files
 web_dir = os.path.join(os.path.dirname(__file__), "Web")

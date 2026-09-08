@@ -14,6 +14,16 @@ from Features.Auth.Domain.UseCases import (
     DeleteUserUseCase,
     CheckEmailExistsUseCase
 )
+from Features.Post.Domain.Repository.PostRepository import PostRepository
+from Features.Post.Data.DataSources.PostRepositoryPostgresSQL import PostRepositoryPostgresSQL
+from Features.Post.Data.DataSources.PostRepositoryMongoDB import PostRepositoryMongoDB
+from Features.Post.Domain.UseCases import (
+    CreatePostUseCase,
+    UpdatePostUseCase,
+    DeletePostUseCase,
+    GetPostByIdUseCase,
+    ListPostsUseCase
+)
 from Core.errors.AuthErrors import InvalidToken
 
 # -----------------------------
@@ -88,14 +98,67 @@ def get_user_by_email_usecase(
 ) -> GetUserByEmailUseCase:
     return GetUserByEmailUseCase(repo)
 
-def get_delete_user_usecase(
-    repo: AuthRepository = Depends(get_auth_repository)
-) -> DeleteUserUseCase:
-    return DeleteUserUseCase(repo)
-
 def get_check_email_exists_usecase(
     repo: AuthRepository = Depends(get_auth_repository)
 ) -> CheckEmailExistsUseCase:
     return CheckEmailExistsUseCase(repo)
+
+
+# -----------------------------
+# Post Repositories Dependency Providers
+# -----------------------------
+def get_postgres_post_repository() -> PostRepository:
+    return PostRepositoryPostgresSQL()
+
+def get_mongodb_post_repository() -> PostRepository:
+    return PostRepositoryMongoDB()
+
+def get_post_repository(repo: PostRepository = Depends(get_postgres_post_repository)) -> PostRepository:
+    if isinstance(repo, DependsParam) or repo is None:
+        return get_postgres_post_repository()
+    return repo
+
+
+# -----------------------------
+# Delete User with Cascade Post Deletion
+# -----------------------------
+def get_delete_user_usecase(
+    repo: AuthRepository = Depends(get_auth_repository),
+    post_repo: PostRepository = Depends(get_post_repository),
+) -> DeleteUserUseCase:
+    return DeleteUserUseCase(auth_repository=repo, post_repository=post_repo)
+
+
+# -----------------------------
+# Post UseCases Dependency Providers
+# -----------------------------
+def get_create_post_usecase(
+    repo: PostRepository = Depends(get_post_repository),
+    auth_repo: AuthRepository = Depends(get_auth_repository),
+) -> CreatePostUseCase:
+    return CreatePostUseCase(post_repository=repo, auth_repository=auth_repo)
+
+def get_update_post_usecase(
+    repo: PostRepository = Depends(get_post_repository),
+    auth_repo: AuthRepository = Depends(get_auth_repository),
+) -> UpdatePostUseCase:
+    return UpdatePostUseCase(post_repository=repo, auth_repository=auth_repo)
+
+def get_delete_post_usecase(
+    repo: PostRepository = Depends(get_post_repository),
+    auth_repo: AuthRepository = Depends(get_auth_repository),
+) -> DeletePostUseCase:
+    return DeletePostUseCase(post_repository=repo, auth_repository=auth_repo)
+
+def get_post_by_id_usecase(
+    repo: PostRepository = Depends(get_post_repository)
+) -> GetPostByIdUseCase:
+    return GetPostByIdUseCase(repo)
+
+def get_list_posts_usecase(
+    repo: PostRepository = Depends(get_post_repository)
+) -> ListPostsUseCase:
+    return ListPostsUseCase(repo)
+
 
 
