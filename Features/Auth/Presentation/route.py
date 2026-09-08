@@ -41,9 +41,20 @@ async def register_user(
 
     token = request.headers.get("access_token")
     if token:
-        user_entity = await usecase.execute(email=user.email, name=user.name, password=user.password,token=token)
+        user_entity = await usecase.execute(
+            email=user.email,
+            name=user.name,
+            password=user.password,
+            token=token,
+            role=user.role,
+        )
     else:
-        user_entity = await usecase.execute(email=user.email, name=user.name, password=user.password)
+        user_entity = await usecase.execute(
+            email=user.email,
+            name=user.name,
+            password=user.password,
+            role=user.role,
+        )
     
         if getattr(user_entity, "token", None):
             max_age = settings.access_token_expire_minutes * 60 if settings.access_token_expire_minutes else None

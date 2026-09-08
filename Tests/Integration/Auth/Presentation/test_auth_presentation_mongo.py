@@ -132,7 +132,7 @@ def test_mongo_register_duplicate_email_fails(client: TestClient, admin_token: s
 @pytest.mark.integration
 def test_mongo_register_admin_with_admin_token(client: TestClient, admin_token: str):
     email = "mongo_pres_new_admin@test.com"
-    data = {"name": "New Mongo Admin", "email": email, "password": "password123"}
+    data = {"name": "New Mongo Admin", "email": email, "password": "password123", "role": "admin"}
 
     res = client.post(
         "/auth/register",
@@ -141,9 +141,14 @@ def test_mongo_register_admin_with_admin_token(client: TestClient, admin_token: 
     )
     assert res.status_code == 201
     assert res.json()["email"] == email
+    assert res.json()["role"] == "admin"
     user_id = res.json()["user_id"]
 
-    client.delete(f"/auth/user/id/{user_id}", headers={"Authorization": f"Bearer {admin_token}"})
+    # تنظيف بواسطة superadmin لأن admin لا يمكنه حذف admin
+    superadmin_token = generate_token(
+        JWTPayload(id="mongo-super-id", email="super@test.com", role=Role.SUPERADMIN.value)
+    )
+    client.delete(f"/auth/user/id/{user_id}", headers={"Authorization": f"Bearer {superadmin_token}"})
 
 
 # -------------------------------------------------------------
@@ -264,3 +269,50 @@ def test_mongo_input_validation_errors(client: TestClient):
         json={"name": "User", "email": "valid@test.com", "password": "123"},
     )
     assert res2.status_code == 422
+
+
+# -------------------------------------------------------------
+# 9. منع الأدمن من حذف أدمن آخر في MongoDB (403 Forbidden)
+# -------------------------------------------------------------
+@pytest.mark.integration
+def test_mongo_admin_cannot_delete_another_admin(client: TestClient, admin_token: str):
+    # 1. إنشاء توكن سوبر أدمن
+    superadmin_token = generate_token(
+        JWTPayload(id="mongo-super-id", email="super@test.com", role=Role.SUPERADMIN.value)
+    )
+
+    # 2. إنشاء مشرف جديد (Admin) بتمرير توكن السوبر أدمن مع تحديد role=admin
+    reg_res = client.post(
+        "/auth/register",
+        json={
+            "name": "Target Mongo Admin",
+            "email": "mongo_target_admin_pres@test.com",
+            "password": "password123",
+            "role": "admin",
+        },
+        headers={"access_token": superadmin_token},
+    )
+    assert reg_res.status_code == 201
+    assert reg_res.json()["role"] == "admin"
+    target_admin_id = str(reg_res.json()["user_id"])
+
+    try:
+        # 3. محاولة المشرف (Admin) حذف المشرف المستهدف -> يجب أن تُرفض بكود 403
+        del_res = client.delete(
+            f"/auth/user/id/{target_admin_id}",
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        assert del_res.status_code == 403
+        assert "admin cannot delete" in del_res.json().get("detail", "").lower()
+
+        # 4. السوبر أدمن يملك الصلاحية لحذف المشرف -> يجب أن تنجح
+        super_del_res = client.delete(
+            f"/auth/user/id/{target_admin_id}",
+            headers={"Authorization": f"Bearer {superadmin_token}"},
+        )
+        assert super_del_res.status_code == 200
+        assert super_del_res.json() is True
+    finally:
+        # تنظيف احتياطي
+        client.delete(f"/auth/user/id/{target_admin_id}", headers={"Authorization": f"Bearer {superadmin_token}"})
+

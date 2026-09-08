@@ -5,6 +5,7 @@ from Core.errors.AuthErrors import (
     UserDoesNotExists,
     UserNotHaveRole,
     InvalidToken,
+    RoleError,
 )
 from Core.security.Jwt import JWTPayload, generate_token
 from Features.Auth.Data.DataSources.AuthRepositoryPostegresSQL import (
@@ -244,3 +245,87 @@ async def test_delete_user_already_deleted_fails(
         )
 
     assert exc_info.value.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_admin_cannot_delete_another_admin(
+    create_user_usecase: CreateUserUseCase,
+    delete_user_usecase: DeleteUserUseCase,
+    auth_repository: AuthRepository,
+):
+    # 1. إنشاء مستخدم بصلاحية ADMIN بواسطة SuperAdmin
+    superadmin_token = generate_token(
+        payload=JWTPayload(
+            id="superadmin-creator-id",
+            email="superadmin@test.com",
+            role=Role.SUPERADMIN.value,
+        )
+    )
+    target_admin = await create_user_usecase.execute(
+        email="target_admin_delete@test.com",
+        name="Target Admin",
+        password="password123",
+        role=Role.ADMIN,
+        token=superadmin_token,
+    )
+    assert target_admin is not None
+
+    # 2. إنشاء توكن لمشرف عادي ADMIN
+    admin_token = generate_token(
+        payload=JWTPayload(
+            id="admin-executor-id",
+            email="admin@test.com",
+            role=Role.ADMIN.value,
+        )
+    )
+
+    # 3. محاولة المشرف حذف مشرف آخر يجب أن تُرفض مع RoleError (403)
+    with pytest.raises(RoleError) as exc_info:
+        await delete_user_usecase.execute(
+            user_id=target_admin.id,
+            token=admin_token,
+        )
+
+    assert exc_info.value.status_code == 403
+    assert "admin cannot delete" in exc_info.value.detail.lower()
+
+    # 4. التأكد من أن المشرف الهدف لم يُحذف وما زال موجوداً
+    existing_admin = await auth_repository.get_user_by_id(target_admin.id)
+    assert existing_admin is not None
+    assert existing_admin.id == target_admin.id
+
+
+@pytest.mark.asyncio
+async def test_superadmin_can_delete_admin(
+    create_user_usecase: CreateUserUseCase,
+    delete_user_usecase: DeleteUserUseCase,
+    auth_repository: AuthRepository,
+):
+    # 1. إنشاء مستخدم بصلاحية ADMIN
+    superadmin_token = generate_token(
+        payload=JWTPayload(
+            id="superadmin-creator-id",
+            email="superadmin@test.com",
+            role=Role.SUPERADMIN.value,
+        )
+    )
+    target_admin = await create_user_usecase.execute(
+        email="target_admin_to_del_by_super@test.com",
+        name="Target Admin",
+        password="password123",
+        role=Role.ADMIN,
+        token=superadmin_token,
+    )
+    assert target_admin is not None
+
+    # 2. تنفيذ الحذف بواسطة SUPERADMIN ويجب أن ينجح
+    result = await delete_user_usecase.execute(
+        user_id=target_admin.id,
+        token=superadmin_token,
+    )
+    assert result is True
+
+    # 3. التأكد من حذفه فعلياً من قاعدة البيانات
+    with pytest.raises(UserDoesNotExists):
+        await auth_repository.get_user_by_id(target_admin.id)
+
