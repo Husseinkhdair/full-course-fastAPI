@@ -24,7 +24,11 @@ logger = logging.getLogger(__name__)
 class AuthRepositoryMongoDB(AuthRepository):
     user_collection = collection_users
 
-    async def create_user(self, email: str, name: str, password: str,role:Optional[Role]) -> UserEntity:
+    def __init__(self, collection=None):
+        if collection is not None:
+            self.user_collection = collection
+
+    async def create_user(self, email: str, name: str, password: str,role:Optional[Role] = None) -> UserEntity:
         try:
             logger.debug(f"creating user in mongodb with email: {email}")
 
