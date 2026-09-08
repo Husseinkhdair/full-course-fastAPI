@@ -288,3 +288,5 @@ def test_mongo_e2e_input_validation_errors(mongo_client: TestClient):
         "/auth/register",
         json={"name": "Bad", "email": "valid@test.com", "password": "123"},
     ).status_code == 422
+
+
