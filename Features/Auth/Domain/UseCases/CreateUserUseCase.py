@@ -36,7 +36,7 @@ class CreateUserUseCase:
             # Check if user already exists
             # ---------------------------------------
             try:
-                existing_user = await self.auth_repository.get_user_by_email(
+                existing_user = await self.auth_repository.check_email_exists(
                     email
                 )
 

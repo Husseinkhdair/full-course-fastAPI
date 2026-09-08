@@ -1,7 +1,9 @@
-from Features.Auth.Domain.Entities.UserEntity import Role,UserEntity
 import logging
+from typing import Optional
 from Core.errors.AuthErrors import AuthError, UserNotHaveRole
 from Core.errors.GlobleErrors import ServerError
+from Core.security.Jwt import verify_token
+from Features.Auth.Domain.Entities.UserEntity import Role, UserEntity
 from Features.Auth.Domain.Repository.AuthRepository import AuthRepository
 
 logger = logging.getLogger(__name__)
@@ -11,13 +13,16 @@ class GetUserByEmailUseCase:
     def __init__(self, auth_repository: AuthRepository):
         self.auth_repository = auth_repository
 
-    async def execute(self, email: str, role:Role) -> UserEntity:
+    async def execute(self, email: str, token: Optional[str]) -> UserEntity:
         try:
-            if role == Role.USER :
+            user = verify_token(token)
+
+            role_val = user.role.value if isinstance(user.role, Role) else str(user.role)
+
+            if role_val not in [Role.ADMIN.value, Role.SUPERADMIN.value]:
                 raise UserNotHaveRole()
 
-            if role == Role.ADMIN or role == Role.SUPERADMIN :
-                return await self.auth_repository.get_user_by_email(email)
+            return await self.auth_repository.get_user_by_email(email)
             
         except AuthError:
             raise

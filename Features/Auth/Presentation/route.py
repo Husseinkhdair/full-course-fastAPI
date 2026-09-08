@@ -87,9 +87,7 @@ async def get_user_by_id(
     token: str = Depends(get_current_token),
     usecase: GetUserByIdUseCase = Depends(get_user_by_id_usecase)
 ):
-
-    token_paylod = verify_token(token)
-    user_entity = await usecase.execute(user_id=user_id, role=token_paylod.role)
+    user_entity = await usecase.execute(user_id=user_id, token=token)
     return InfoUserTDO.from_entity(user_entity)
 
 
@@ -99,8 +97,7 @@ async def get_user_by_email(
     token: str = Depends(get_current_token),
     usecase: GetUserByEmailUseCase = Depends(get_user_by_email_usecase)
 ):
-    token_paylod = verify_token(token)
-    user_entity = await usecase.execute(email=email, role=token_paylod.role)
+    user_entity = await usecase.execute(email=email, token=token)
     return InfoUserTDO.from_entity(user_entity)
 
 
