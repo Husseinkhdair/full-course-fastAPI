@@ -28,3 +28,7 @@ class InvalidToken(AuthError):
 class RoleError(AuthError):
     def __init__(self,detail:str):
         super().__init__(detail,403)
+
+class TokenIsRequire(AuthError):
+    def __init__(self):
+        super().__init__("Token is require",401)

@@ -1,6 +1,7 @@
+from Core.errors.AuthErrors import TokenIsRequire
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
-from fastapi import Depends, Header, Cookie
+from fastapi import Depends, Header, Cookie, Request
 from fastapi.params import Depends as DependsParam
 from Features.Auth.Data.DataSources.AuthRepositoryPostegresSQL import AuthRepositoryPostgresSQl
 from Features.Auth.Data.DataSources.AuthRepositoryMongoDB import AuthRepositoryMongoDB
@@ -21,22 +22,31 @@ security = HTTPBearer(auto_error=False)
 
 
 def get_current_token(
+    request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-    access_token: Optional[str] = Cookie(None)
 ) -> str:
-
     token = None
 
-    # Swagger / Authorization Header
+    # 1. من Swagger Authorize (Authorization: Bearer <token>)
     if credentials:
         token = credentials.credentials
 
-    # Browser / Cookie
-    elif access_token:
-        token = access_token
+    # 2. من الـ Header مباشرة (access_token أو access-token أو authorization)
+    if not token:
+        raw_header = (
+            request.headers.get("access_token")
+            or request.headers.get("access-token")
+            or request.headers.get("authorization")
+        )
+        if raw_header:
+            token = raw_header[7:].strip() if raw_header.startswith("Bearer ") else raw_header.strip()
+
+    # 3. خيار احتياطي من الـ Cookie
+    if not token:
+        token = request.cookies.get("access_token")
 
     if not token:
-        raise InvalidToken()
+        raise TokenIsRequire()
 
     return token
 # -----------------------------

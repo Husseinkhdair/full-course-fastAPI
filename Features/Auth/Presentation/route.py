@@ -107,15 +107,9 @@ async def get_user_by_email(
 @router.delete("/user/id/{user_id}", response_model=bool, status_code=status.HTTP_200_OK)
 async def delete_user(
     user_id: str,
-    request: Request,
+    token: str = Depends(get_current_token),
     usecase: DeleteUserUseCase = Depends(get_delete_user_usecase)
 ):
-    token = request.headers.get("access_token") or request.headers.get("authorization")
-    if token and token.startswith("Bearer "):
-        token = token[7:].strip()
-    elif not token:
-        token = request.cookies.get("access_token")
-
     return await usecase.execute(user_id=user_id, token=token)
 
 
