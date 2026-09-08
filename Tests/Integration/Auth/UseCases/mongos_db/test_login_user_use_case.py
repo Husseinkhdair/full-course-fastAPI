@@ -1,77 +1,90 @@
 import pytest
-from Core.di import (
-    get_auth_repository,
-    get_create_user_usecase,
-    get_login_user_usecase,
-)
+from Core.Session.sessiong_mongos import get_clean_mongo_collection
 from Core.errors.AuthErrors import InvalidEmailOrPassword
+from Features.Auth.Data.DataSources.AuthRepositoryMongoDB import (
+    AuthRepositoryMongoDB,
+)
+from Features.Auth.Domain.Entities.UserEntity import UserEntity
 from Features.Auth.Domain.Repository.AuthRepository import AuthRepository
 from Features.Auth.Domain.UseCases.CreateUserUseCase import CreateUserUseCase
 from Features.Auth.Domain.UseCases.LoginUserUseCase import LoginUserUseCase
 
 
 @pytest.fixture
-def auth_repository() -> AuthRepository:
-    return get_auth_repository()
+async def auth_repository():
+    async with get_clean_mongo_collection() as collection:
+        yield AuthRepositoryMongoDB(collection=collection)
 
 
 @pytest.fixture
 def create_user_usecase(auth_repository: AuthRepository) -> CreateUserUseCase:
-    return get_create_user_usecase(repo=auth_repository)
+    return CreateUserUseCase(auth_repository=auth_repository)
 
 
 @pytest.fixture
 def login_user_usecase(auth_repository: AuthRepository) -> LoginUserUseCase:
-    return get_login_user_usecase(repo=auth_repository)
+    return LoginUserUseCase(auth_repository=auth_repository)
 
 
 @pytest.mark.asyncio
 async def test_login_user_use_case_success(
     create_user_usecase: CreateUserUseCase,
     login_user_usecase: LoginUserUseCase,
-    auth_repository: AuthRepository,
 ):
+    email = "mongo_login_success@test.com"
+    password = "password123"
+
+    # 1. إنشاء المستخدم
     created_user = await create_user_usecase.execute(
-        email="test_uc_login@test.com", name="test", password="password123"
+        email=email,
+        name="Mongo Login User",
+        password=password,
     )
     assert created_user is not None
 
+    # 2. تسجيل الدخول
     logged_user = await login_user_usecase.execute(
-        email="test_uc_login@test.com", password="password123"
+        email=email,
+        password=password,
     )
-    assert logged_user is not None
-    assert logged_user.email == "test_uc_login@test.com"
-    assert logged_user.token is not None
 
-    deleted = await auth_repository.delete_user(user_id=created_user.id)
-    assert deleted is True
+    assert logged_user is not None
+    assert isinstance(logged_user, UserEntity)
+    assert logged_user.email == email
+    assert logged_user.token is not None
 
 
 @pytest.mark.asyncio
 async def test_login_user_use_case_invalid_password(
     create_user_usecase: CreateUserUseCase,
     login_user_usecase: LoginUserUseCase,
-    auth_repository: AuthRepository,
 ):
+    email = "mongo_wrong_pwd@test.com"
+    correct_password = "password123"
+
+    # 1. إنشاء المستخدم
     created_user = await create_user_usecase.execute(
-        email="test_uc_login_wrong_pwd@test.com", name="test", password="password123"
+        email=email,
+        name="Mongo User",
+        password=correct_password,
     )
     assert created_user is not None
 
+    # 2. تسجيل الدخول بكلمة سر خاطئة
     with pytest.raises(InvalidEmailOrPassword):
         await login_user_usecase.execute(
-            email="test_uc_login_wrong_pwd@test.com", password="wrongpassword"
+            email=email,
+            password="wrongpassword456",
         )
-
-    deleted = await auth_repository.delete_user(user_id=created_user.id)
-    assert deleted is True
 
 
 @pytest.mark.asyncio
 async def test_login_user_use_case_user_not_found(
     login_user_usecase: LoginUserUseCase,
 ):
+    # محاولة تسجيل الدخول لمستخدم غير موجود
     with pytest.raises(InvalidEmailOrPassword):
         await login_user_usecase.execute(
-            email="nonexistent_login@test.com", password="password123"
+            email="nonexistent_mongo_user@test.com",
+            password="password123",
         )
