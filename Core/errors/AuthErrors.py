@@ -24,3 +24,7 @@ class UserNotHaveRole(AuthError):
 class InvalidToken(AuthError):
     def __init__(self):
         super().__init__("Invalid token",401)
+
+class RoleError(AuthError):
+    def __init__(self,detail:str):
+        super().__init__(detail,403)

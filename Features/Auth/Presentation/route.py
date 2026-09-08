@@ -1,3 +1,5 @@
+from fastapi import Request
+from Features.Auth.Domain.Entities.UserEntity import Role
 from fastapi import Cookie
 from typing import Optional
 from Core.security.Jwt import verify_token
@@ -24,26 +26,35 @@ settings = SettingsApp()
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("/register", response_model=InfoUserTDO, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register",
+    response_model=InfoUserTDO,
+    status_code=status.HTTP_201_CREATED,
+   
+    )
 async def register_user(
     user: CreateUserTDO,
     response: Response,
-    request_token: Optional[str] = Cookie(default=None),
-    
+    request: Request,
     usecase: CreateUserUseCase = Depends(get_create_user_usecase)
-):
-    user_entity = await usecase.execute(email=user.email, name=user.name, password=user.password)
+    ):
+
+    token = request.headers.get("access_token")
+    if token:
+        user_entity = await usecase.execute(email=user.email, name=user.name, password=user.password,token=token)
+    else:
+        user_entity = await usecase.execute(email=user.email, name=user.name, password=user.password)
     
-    if getattr(user_entity, "token", None):
-        max_age = settings.access_token_expire_minutes * 60 if settings.access_token_expire_minutes else None
-        response.set_cookie(
-            key="access_token",
-            value=user_entity.token,
-            httponly=True,
-            samesite="lax",
-            secure=settings.Development == "False",
-            max_age=max_age
-        )
+        if getattr(user_entity, "token", None):
+            max_age = settings.access_token_expire_minutes * 60 if settings.access_token_expire_minutes else None
+            response.set_cookie(
+                key="access_token",
+                value=user_entity.token,
+                httponly=True,
+                samesite="lax",
+                secure=settings.Development == "False",
+                max_age=max_age
+            )
     
     return InfoUserTDO.from_entity(user_entity)
 
@@ -96,11 +107,16 @@ async def get_user_by_email(
 @router.delete("/user/id/{user_id}", response_model=bool, status_code=status.HTTP_200_OK)
 async def delete_user(
     user_id: str,
-    token: str = Depends(get_current_token),
+    request: Request,
     usecase: DeleteUserUseCase = Depends(get_delete_user_usecase)
 ):
-    token_paylod = verify_token(token)
-    return await usecase.execute(user_id=user_id, role=token_paylod.role)
+    token = request.headers.get("access_token") or request.headers.get("authorization")
+    if token and token.startswith("Bearer "):
+        token = token[7:].strip()
+    elif not token:
+        token = request.cookies.get("access_token")
+
+    return await usecase.execute(user_id=user_id, token=token)
 
 
 

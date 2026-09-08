@@ -1,3 +1,4 @@
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
 from fastapi import Depends, Header, Cookie
 from fastapi.params import Depends as DependsParam
@@ -16,24 +17,28 @@ from Core.errors.AuthErrors import InvalidToken
 # -----------------------------
 # Security & Token Providers
 # -----------------------------
+security = HTTPBearer(auto_error=False)
+
+
 def get_current_token(
-    authorization: Optional[str] = Header(None),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     access_token: Optional[str] = Cookie(None)
 ) -> str:
+
     token = None
-    if authorization:
-        if authorization.startswith("Bearer "):
-            token = authorization[7:].strip()
-        else:
-            token = authorization.strip()
+
+    # Swagger / Authorization Header
+    if credentials:
+        token = credentials.credentials
+
+    # Browser / Cookie
     elif access_token:
         token = access_token
 
     if not token:
         raise InvalidToken()
+
     return token
-
-
 # -----------------------------
 # Repositories Dependency Providers
 # -----------------------------

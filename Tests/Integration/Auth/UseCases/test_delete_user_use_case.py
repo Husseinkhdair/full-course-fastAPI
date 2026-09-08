@@ -1,3 +1,5 @@
+import uuid
+from Core.security.Jwt import JWTPayload, generate_token
 import pytest
 from Core.di import (
     get_auth_repository,
@@ -6,6 +8,7 @@ from Core.di import (
     get_user_by_id_usecase as di_get_user_by_id_usecase,
 )
 from Core.errors.AuthErrors import UserDoesNotExists
+from Features.Auth.Domain.Entities.UserEntity import Role
 from Features.Auth.Domain.Repository.AuthRepository import AuthRepository
 from Features.Auth.Domain.UseCases.CreateUserUseCase import CreateUserUseCase
 from Features.Auth.Domain.UseCases.DeleteUserUseCase import DeleteUserUseCase
@@ -38,21 +41,25 @@ async def test_delete_user_use_case_success(
     delete_user_usecase: DeleteUserUseCase,
     get_user_by_id_usecase: GetUserByIdUseCase,
 ):
+    email = f"test_delete_{uuid.uuid4().hex[:8]}@test.com"
     created_user = await create_user_usecase.execute(
-        email="test_uc_delete@test.com", name="test", password="password123"
+        email=email, name="test", password="password123"
     )
     assert created_user is not None
 
-    deleted = await delete_user_usecase.execute(user_id=created_user.id)
+    token = generate_token(JWTPayload(id=created_user.id, email=created_user.email, role="admin"))
+
+    deleted = await delete_user_usecase.execute(user_id=created_user.id, token=token)
     assert deleted is True
 
     with pytest.raises(UserDoesNotExists):
-        await get_user_by_id_usecase.execute(user_id=created_user.id)
+        await get_user_by_id_usecase.execute(user_id=created_user.id, role=Role.ADMIN)
 
 
 @pytest.mark.asyncio
 async def test_delete_user_use_case_not_found(
     delete_user_usecase: DeleteUserUseCase,
 ):
+    token = generate_token(JWTPayload(id="admin_1", email="admin@test.com", role="admin"))
     with pytest.raises(UserDoesNotExists):
-        await delete_user_usecase.execute(user_id="non_existent_delete_id_999")
+        await delete_user_usecase.execute(user_id="non_existent_delete_id_999", token=token)

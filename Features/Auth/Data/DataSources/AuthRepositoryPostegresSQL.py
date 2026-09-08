@@ -27,17 +27,9 @@ class AuthRepositoryPostgresSQl(AuthRepository):
     def __init__(self, db=None):
         self.db = db if db is not None else SessionLocal()
 
-    async def create_user(self, email: str, name: str, password: str,role:Optional[Role]) -> UserEntity:
+    async def create_user(self, email: str, name: str, password: str,role:Optional[Role] = None) -> UserEntity:
         try:
             logger.debug(f"creating user in postgresql with email: {email}")
-
-            existing = self.db.execute(
-                select(AuthPostgresModel).where(AuthPostgresModel.email == email)
-            ).scalars().first()
-
-            if existing:
-                logger.info(f"user already exists with email: {email}")
-                raise UserAlredyExists()
 
             now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
             hashed_pwd = hash_password(password)

@@ -7,7 +7,7 @@ from Features.Auth.Domain.Entities.UserEntity import UserEntity
 class AuthRepository(ABC):
 
     @abstractmethod
-    async def create_user(self, email: str, name: str, password: str,role:Optional[Role]) -> UserEntity:
+    async def create_user(self, email: str, name: str, password: str,role:Optional[Role] = None) -> UserEntity:
         pass
 
     @abstractmethod

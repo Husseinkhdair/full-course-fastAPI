@@ -27,10 +27,6 @@ class AuthRepositoryMongoDB(AuthRepository):
     async def create_user(self, email: str, name: str, password: str,role:Optional[Role]) -> UserEntity:
         try:
             logger.debug(f"creating user in mongodb with email: {email}")
-            existing_user = await self.user_collection.find_one({"email": email})
-            if existing_user:
-                logger.info(f"user already exists with email: {email}")
-                raise UserAlredyExists()
 
             now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
             hashed_pwd = hash_password(password)
