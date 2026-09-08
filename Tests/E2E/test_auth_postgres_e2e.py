@@ -197,7 +197,8 @@ def test_pg_e2e_rbac_and_auth_guards(pg_client: TestClient):
     assert pg_client.get("/auth/user/email/pg_guard_e2e@test.com", headers=user_headers).status_code == 403
     assert pg_client.delete(f"/auth/user/id/{user_id}", headers=user_headers).status_code == 403
 
-    # طلب بدون توكن (401)
+    # طلب بدون توكن (تفريغ الكوكيز لضمان عدم وجود توكن مخزن) -> 401
+    pg_client.cookies.clear()
     assert pg_client.get(f"/auth/user/id/{user_id}").status_code == 401
 
     # طلب بتوكن غير صالح (401)
